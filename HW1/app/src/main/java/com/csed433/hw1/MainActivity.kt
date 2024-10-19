@@ -11,37 +11,36 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorManager
+import android.hardware.SensorEventListener
+import android.os.Handler
+import android.os.HandlerThread
+import android.widget.Button
+import androidx.annotation.WorkerThread
 import com.csed433.hw1.ui.theme.CSED433HW1SensorMonitorTheme
 
 class MainActivity : ComponentActivity() {
+
+    private lateinit var mSensorManager: SensorManager
+    private lateinit var mAccel: Sensor
+    private var mSensing: Boolean = false
+    private lateinit var mSensorEventListener: SensorEventListener
+    private lateinit var mWorkerThread: HandlerThread
+    private lateinit var mHandlerWorker: Handler
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            CSED433HW1SensorMonitorTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
-            }
+        mSensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
+        mAccel = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        mWorkerThread = HandlerThread("Worker Thread")
+        mWorkerThread.start();
+        mHandlerWorker = Handler(mWorkerThread.looper)
+
+        findViewById<Button>(R.id.buttonStartStop).setOnclickListener {
+
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    CSED433HW1SensorMonitorTheme {
-        Greeting("Android")
     }
 }
