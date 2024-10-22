@@ -364,7 +364,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:backgroundTint="#8BC34A"
             android:fontFamily="sans-serif"
             android:text="START"
             android:textStyle="bold" />
@@ -381,9 +380,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:backgroundTint="#AA00FF"
             android:text="EXPORT"
-            android:textColor="@color/white"
             android:textStyle="bold" />
     </LinearLayout>
 

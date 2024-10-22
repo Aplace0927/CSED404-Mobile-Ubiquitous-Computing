@@ -10,17 +10,24 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.widget.Button
 import android.widget.TextView
+import androidx.compose.ui.graphics.Color
+import java.io.BufferedWriter
+import java.io.File
+import java.nio.Buffer
 
 class MainActivity : ComponentActivity() {
 
     private lateinit var mSensorManager: SensorManager
     private var mSensing: Boolean = false
+    private var mLogging: Boolean = false
     private lateinit var mAccel: Sensor
     private lateinit var mGravity: Sensor
     private lateinit var mGyro: Sensor
     private lateinit var mSensorEventListener: SensorEventListener
     private lateinit var mWorkerThread: HandlerThread
     private lateinit var mHandlerWorker: Handler
+    private lateinit var wFile: File
+    private lateinit var wBuffer: BufferedWriter
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,16 +45,41 @@ class MainActivity : ComponentActivity() {
         mHandlerWorker = Handler(mWorkerThread.looper)
 
         val btnStartStop = findViewById<Button>(R.id.start_stop_btn)
+        val btnPauseResume = findViewById<Button>(R.id.pause_resume_btn)
 
         btnStartStop.setOnClickListener() {
             mSensing = !mSensing
             if (mSensing) {
+                // Initialize buffer
                 startSensing()
+                btnStartStop.setBackgroundColor(0xFF_FF4081.toInt())
+                btnStartStop.setTextColor(0xFF_FFFFFF.toInt())
                 btnStartStop.setText("STOP")
             }
             else {
+                // Open file
+                // Write buffer data into file
+                // Close file
+                // Clear buffer
                 stopSensing()
+                btnStartStop.setBackgroundColor(0xFF_69F0AE.toInt())
+                btnStartStop.setTextColor(0xFF_000000.toInt())
                 btnStartStop.setText("START")
+                mLogging = false
+                btnPauseResume.setText("RESUME")
+            }
+        }
+
+        btnPauseResume.setOnClickListener() {
+            if (mSensing) {
+                mLogging = !mLogging
+                if (mLogging) {
+                    btnPauseResume.setText("PAUSE")
+                }
+                else {
+                    btnPauseResume.setText("RESUME")
+                }
+
             }
         }
     }
@@ -85,6 +117,9 @@ class MainActivity : ComponentActivity() {
                         updateTextViewValue(R.id.gyro_y_value_text, values[1])
                         updateTextViewValue(R.id.gyro_z_value_text, values[2])
                     }
+                }
+                if (mLogging) {
+                    // Append sensor data to buffer
                 }
             }
 
