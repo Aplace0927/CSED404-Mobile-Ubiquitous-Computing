@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="action_category">
+        <item>Other</item>
+        <item>Walking</item>
+        <item>Running</item>
+        <item>Standing</item>
+        <item>Sitting</item>
+        <item>Upstairs</item>
+        <item>Downstairs</item>
+    </string-array>
+</resources>

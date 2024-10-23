@@ -9,7 +9,11 @@ import android.hardware.SensorEventListener
 import android.os.Environment
 import android.os.Handler
 import android.os.HandlerThread
+import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.Spinner
 import android.widget.TextView
 import java.io.File
 import java.io.FileOutputStream
@@ -37,6 +41,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var wAcclFile: File
     private lateinit var wAcclOutputStream: FileOutputStream
 
+    private var actionCategoryID = 0
     private var timestamp = 0L
     private var xGyro = 0.0f
     private var yGyro = 0.0f
@@ -61,6 +66,23 @@ class MainActivity : ComponentActivity() {
         mWorkerThread = HandlerThread("Worker Thread")
         mWorkerThread.start()
         mHandlerWorker = Handler(mWorkerThread.looper)
+
+        val spinnerActionSelect = findViewById<Spinner>(R.id.action_category_spinner)
+        spinnerActionSelect.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, resources.getStringArray(R.array.action_category))
+        spinnerActionSelect.onItemSelectedListener = object: AdapterView.OnItemSelectedListener{
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                actionCategoryID = position
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                actionCategoryID = 0
+            }
+        }
 
         val btnStartStop = findViewById<Button>(R.id.start_stop_btn)
         val btnPauseResume = findViewById<Button>(R.id.pause_resume_btn)
@@ -125,7 +147,6 @@ class MainActivity : ComponentActivity() {
                 else {
                     btnPauseResume.setText("RESUME")
                 }
-
             }
         }
     }
@@ -147,7 +168,7 @@ class MainActivity : ComponentActivity() {
                         updateTextViewValue(R.id.accel_z_value_text, zAccl)
                     }
                     if (mLogging) {
-                        wAcclOutputStream.write("%d, %.9e, %.9e, %.9e\n".format(timestamp, xAccl, yAccl, zAccl).toByteArray())
+                        wAcclOutputStream.write("%d, %d, %.9e, %.9e, %.9e\n".format(timestamp, actionCategoryID, xAccl, yAccl, zAccl).toByteArray())
                     }
                 }
                 if (event?.sensor?.type == Sensor.TYPE_GRAVITY) {
@@ -162,7 +183,7 @@ class MainActivity : ComponentActivity() {
                         updateTextViewValue(R.id.gravity_z_value_text, zGrav)
                     }
                     if (mLogging) {
-                        wGravOutputStream.write("%d, %.9e, %.9e, %.9e\n".format(timestamp, xGrav, yGrav, zGrav).toByteArray())
+                        wGravOutputStream.write("%d, %d, %.9e, %.9e, %.9e\n".format(timestamp, actionCategoryID, xGrav, yGrav, zGrav).toByteArray())
                     }
                 }
                 if (event?.sensor?.type == Sensor.TYPE_GYROSCOPE) {
@@ -177,7 +198,7 @@ class MainActivity : ComponentActivity() {
                         updateTextViewValue(R.id.gyro_z_value_text, zGyro)
                     }
                     if (mLogging) {
-                        wGyroOutputStream.write("%d, %.9e, %.9e, %.9e\n".format(timestamp, xGyro, yGyro, zGyro).toByteArray())
+                        wGyroOutputStream.write("%d, %d, %.9e, %.9e, %.9e\n".format(timestamp, actionCategoryID, xGyro, yGyro, zGyro).toByteArray())
                     }
                 }
             }
