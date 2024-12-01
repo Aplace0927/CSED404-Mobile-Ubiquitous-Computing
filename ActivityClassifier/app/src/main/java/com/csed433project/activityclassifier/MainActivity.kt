@@ -18,6 +18,7 @@ import kotlin.math.sqrt
 import libsvm.*
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import kotlin.math.abs
 
 class MainActivity : ComponentActivity() {
 
@@ -149,6 +150,7 @@ class MainActivity : ComponentActivity() {
         mSensorManager.unregisterListener(mSensorEventListener, mAccel)
         mSensorManager.unregisterListener(mSensorEventListener, mGyro)
         mSensorManager.unregisterListener(mSensorEventListener, mGravity)
+        svmWorker.removeCallbacksAndMessages(null)
     }
 
     fun startPredict() {
@@ -238,19 +240,31 @@ class MainActivity : ComponentActivity() {
 
                 for (idx in 0 .. 35) {
                     /*
-                        [MIN - MAX] -> [-0.5, +0.5]
+                        [MIN - MAX] -> [-1.0, +1.0] by
+                        lower + (upper - lower) * (value - feature_min) / (feature_max - feature_min)
                      */
                     svmNode[idx].index = idx + 1
                     svmNode[idx].value = ((svmFeatures[idx] - svmCoeff[idx][0]) / (svmCoeff[idx][1] - svmCoeff[idx][0]) * 2 - 1).toDouble()
                     svmFeatures[idx] = svmNode[idx].value.toFloat()
                 }
 
-                Log.d("Feat", "Value = %s".format(svmFeatures.joinToString(prefix = "[", separator = ",", postfix = "]")))
+                // Log.d("Feat", "Value = %s".format(svmFeatures.joinToString(prefix = "[", separator = ",", postfix = "]")))
 
-                val prediction = svm.svm_predict(svmModel, svmNode).toInt()
+                var svmProbs = DoubleArray(7)
+                val predictionProb = svm.svm_predict_probability(svmModel, svmNode, svmProbs)
+
+                var withoutOthersValue = 0.0
+                var withoutOthersCateg = 0
+                for (idx in 1..6) {
+                    if (withoutOthersValue < svmProbs[idx]) {
+                        withoutOthersValue = svmProbs[idx]
+                        withoutOthersCateg = idx
+                    }
+                }
+
                 runOnUiThread(object: Runnable{
                     override fun run() {
-                        findViewById<TextView>(R.id.prediction_label_text).text = resources.getStringArray(R.array.activityclass_name)[prediction]
+                        findViewById<TextView>(R.id.prediction_label_text).text = resources.getStringArray(R.array.activityclass_name)[withoutOthersCateg]
                     }
                 })
                 svmWorker.postDelayed(this, 1000)
